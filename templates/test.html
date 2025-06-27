@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>WorldMatters - Chatbot</title>
+</head>
+<body class="h-[100dvh] m-0 p-0 overflow-x-hidden bg-zinc-950">
+    <nav>
+        <div class="w-full px-6 flex flex-wrap items-center justify-between mx-auto p-4">
+            <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
+                <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="WorldMatters Logo" />
+                <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">WorldMatters</span>
+            </a>
+            <div>
+                <p class="text-3xl font-medium text-white">🤖</p>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex justify-center mt-7">
+        <section class="box-border w-full sm:w-[800px] md:w-[900px] lg:w-[1000px] h-[700px] p-6 border-2 border-gray-700 rounded-2xl shadow-lg bg-zinc-900 flex flex-col">
+            
+            <!-- Chat Header -->
+            <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-semibold">AI</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-white">WorldMatters Assistant</h2>
+                        <p class="text-sm text-gray-400">Online</p>
+                    </div>
+                </div>
+                <button id="clearChat" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors">
+                    Limpiar Chat
+                </button>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messagesContainer" class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+                <!-- Welcome Message -->
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-sm font-semibold">AI</span>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-3 max-w-md">
+                        <p class="text-white">¡Hola! Soy tu asistente de WorldMatters. ¿En qué puedo ayudarte hoy?</p>
+                        <span class="text-xs text-gray-500 mt-1 block">Ahora</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-700 pt-4">
+                <div class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Escribe tu mensaje aquí..." 
+                        class="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    >
+                    <button 
+                        id="sendButton" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span>Enviar</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                    <p class="text-xs text-gray-500">Presiona Enter para enviar</p>
+                    <div id="typingIndicator" class="text-xs text-gray-500 hidden">
+                        <span class="flex items-center space-x-1">
+                            <span>El asistente está escribiendo</span>
+                            <div class="flex space-x-1">
+                                <div class="w-1 h-1 bg-gray-500 rounded-full animate-bounce"></div>
+                                <div class="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                <div class="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script>
+        class Chatbot {
+            constructor() {
+                this.messagesContainer = document.getElementById('messagesContainer');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.clearButton = document.getElementById('clearChat');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                
+                this.init();
+            }
+
+            init() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+                this.clearButton.addEventListener('click', () => this.clearChat());
+            }
+
+            sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message) return;
+
+                // Añadir mensaje del usuario
+                this.addMessage(message, 'user');
+                this.messageInput.value = '';
+                this.messageInput.disabled = true;
+                this.sendButton.disabled = true;
+
+                // Mostrar indicador de escritura
+                this.showTyping();
+
+                // Simular respuesta del bot
+                setTimeout(() => {
+                    this.hideTyping();
+                    const response = this.generateResponse(message);
+                    this.addMessage(response, 'bot');
+                    this.messageInput.disabled = false;
+                    this.sendButton.disabled = false;
+                    this.messageInput.focus();
+                }, 1000 + Math.random() * 2000);
+            }
+
+            addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                const time = new Date().toLocaleTimeString('es-ES', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <div class="flex items-start space-x-3 justify-end">
+                            <div class="bg-blue-600 rounded-lg p-3 max-w-md">
+                                <p class="text-white">${text}</p>
+                                <span class="text-xs text-blue-200 mt-1 block">${time}</span>
+                            </div>
+                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-sm font-semibold">Tú</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-sm font-semibold">AI</span>
+                            </div>
+                            <div class="bg-gray-800 rounded-lg p-3 max-w-md">
+                                <p class="text-white">${text}</p>
+                                <span class="text-xs text-gray-500 mt-1 block">${time}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                this.messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            generateResponse(message) {
+                const responses = [
+                    "Gracias por tu mensaje. Como asistente de WorldMatters, estoy aquí para ayudarte con cualquier consulta.",
+                    "Entiendo tu pregunta. Déjame ayudarte con esa información.",
+                    "Es una excelente pregunta. Te proporciono la información que necesitas.",
+                    "Me alegra poder asistirte hoy. ¿Hay algo más específico en lo que pueda ayudarte?",
+                    "Perfecto, puedo ayudarte con eso. WorldMatters se enfoca en brindar las mejores soluciones.",
+                    "Gracias por contactar con WorldMatters. Estoy procesando tu solicitud.",
+                    "Es interesante lo que mencionas. Permíteme darte una respuesta detallada.",
+                    "Como parte del equipo de WorldMatters, mi objetivo es brindarte la mejor asistencia posible."
+                ];
+
+                // Respuestas específicas basadas en palabras clave
+                if (message.toLowerCase().includes('hola') || message.toLowerCase().includes('saludo')) {
+                    return "¡Hola! Es un gusto saludarte. ¿En qué puedo asistirte hoy?";
+                }
+                
+                if (message.toLowerCase().includes('ayuda')) {
+                    return "Por supuesto, estoy aquí para ayudarte. Puedes preguntarme sobre nuestros servicios, productos o cualquier consulta general.";
+                }
+                
+                if (message.toLowerCase().includes('gracias')) {
+                    return "¡De nada! Es un placer poder ayudarte. ¿Hay algo más en lo que pueda ser útil?";
+                }
+
+                if (message.toLowerCase().includes('worldmatters')) {
+                    return "WorldMatters es nuestra plataforma dedicada a brindar soluciones innovadoras. ¿Te gustaría saber más sobre algún aspecto específico?";
+                }
+
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+
+            showTyping() {
+                this.typingIndicator.classList.remove('hidden');
+            }
+
+            hideTyping() {
+                this.typingIndicator.classList.add('hidden');
+            }
+
+            scrollToBottom() {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+
+            clearChat() {
+                this.messagesContainer.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-sm font-semibold">AI</span>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg p-3 max-w-md">
+                            <p class="text-white">¡Hola! Soy tu asistente de WorldMatters. ¿En qué puedo ayudarte hoy?</p>
+                            <span class="text-xs text-gray-500 mt-1 block">Ahora</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Inicializar el chatbot cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            new Chatbot();
+        });
+    </script>
+</body>
+</html>
