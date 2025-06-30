@@ -46,6 +46,3 @@ insertMany_test()
 """
 
 # How to do a find operation in a collection
-
-def find_chatbot_doc():
-    chatbot_db = collection.find()

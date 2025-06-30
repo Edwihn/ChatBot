@@ -1,6 +1,7 @@
 {
   "devDependencies": {
-    "daisyui": "^5.0.43"
+    "daisyui": "^5.0.43",
+    "tailwind-animate": "^0.2.10"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.10",

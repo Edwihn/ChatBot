@@ -16,19 +16,20 @@
     <nav>
         <div class="w-full px-6 flex flex-wrap items-center justify-center mx-auto pt-6">
             <a href="#" 
-            class="relative items-center space-x-3 rtl:space-x-reverse after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
-                <span class="self-center text-4xl font-bold whitespace-nowrap dark:text-white">WorldMatters</span>
+            class="relative items-center space-x-3">
+                <span class="self-center text-4xl font-bold text-white whitespace-nowrap inline-block opacity-0 animate-slide-down">WorldMatters</span>
             </a>
         </div>
     </nav>
     
     <!--This is the MAIN CONTENT-->
     <main class="flex justify-center items-center mt-7 bg-zinc-950">
+
         <!-- CHAR CONTAINER -->
         <section class="box-border w-full sm:w-[600px] md:w-[700px] lg:w-[900px] h-[550px] p-6 rounded-2xl shadow-lg bg-zinc-800/70 flex flex-col">
             
             <!-- CHAT HEADER -->
-            <div id="messagesContainer" class="flex items-center justify-between mb-4 pb-4 pr-1 border-b-2 border-gray-400">
+            <div id="title" class="flex items-center justify-between mb-4 pb-4 pr-1 border-b-2 border-gray-400">
                 <div class="flex items-center space-x-3">
                     <div class=" text-blue-600 text-3xl rounded-full flex items-center justify-center">
                         <i class="fa-solid fa-robot"></i>
@@ -38,7 +39,7 @@
                         <p class="text-sm text-gray-400">Online</p>
                     </div>
                 </div>
-                <button id="clearChat" class="flex items-center px-4 py-1 bg-[#DF8312] gap-2 hover:bg-gray-600 text-white font-black rounded-xl transition-colors">
+                <button id="clearChat" class="flex items-center px-4 py-1 bg-[#DF8312] gap-2 text-white font-black rounded-xl hover:scale-105 transition duration-300">
                     <i class="fa-solid fa-retweet mt-1 text-lg"></i>
                     <span class="text-sm">Limpiar Chat</span>
                 </button>
@@ -46,9 +47,10 @@
 
             <!-- MESSAGES INIT -->
             <div id="messagesContainer" class="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+
                 <!-- Welcome Message -->
-                <div class="flex items-start space-x-3">
-                    <div class="flex text-blue-600 text-3xl items-center justify-center flex-shrink-0">
+                <div class="flex items-start space-x-3"> 
+                    <div class="flex text-blue-600 text-3xl items-center justify-center flex-shrink-0 mt-1">
                         <i class="fa-solid fa-robot"></i>
                     </div>
                     <div class="bg-gray-800 rounded-lg p-3 max-w-md">
@@ -59,7 +61,8 @@
             </div>
 
             <!-- INPUT AREA -->
-            <form action="/buscar" method="GET" class="flex border-t-2 border-gray-400 pt-4">
+            <form class="flex border-t-2 border-gray-400 pt-5">
+
                 <!-- BUTTON OF THE CATEGORIES -->
                 <button id="dropdown-button" data-dropdown-toggle="dropdown" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-l-full" type="button">
                     <span id="selected-category">Categorias</span>
@@ -82,25 +85,12 @@
 
                 <!-- INPUT TO SEARCH -->
                 <div class="relative w-full">
-                    <input id="messageInput" type="search" name="query" placeholder="Search" 
-                    class="block p-2.5 w-full z-20 text-md font-medium text-white bg-gray-200/10 border border-gray-300/30 rounded-r-full" 
-                    value="Que calculadoras tiene CleanLyfe?" required>
-                    <button id="sendButton" type="submit" class="absolute top-0 end-0 px-4 py-3 h-full text-md text-white bg-blue-600 rounded-r-full hover:bg-blue-800">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="messageInput" type="text" placeholder="Seleccione una categoria" 
+                    class="block p-2.5 w-2xl z-20 text-md font-medium text-white bg-gray-200/10 border border-gray-300/30 rounded-r-full"
+                    disabled>
+                    <button id="sendButton" class="absolute top-0 end-0 px-4 h-full text-md text-white bg-blue-600 rounded-full hover:bg-blue-800" disabled>
+                        <i class="fa-solid fa-paper-plane"></i>
                     </button>
-                </div>
-                <div class="flex items-center justify-between mt-2">
-                    <p class="text-xs text-gray-500">Presiona Enter para enviar</p>
-                    <div id="typingIndicator" class="text-xs text-gray-500 hidden">
-                        <span class="flex items-center space-x-1">
-                            <span>El asistente está escribiendo</span>
-                            <div class="flex space-x-1">
-                                <div class="w-1 h-1 bg-gray-500 rounded-full animate-bounce"></div>
-                                <div class="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                                <div class="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                            </div>
-                        </span>
-                    </div>
                 </div>
             </form>
 
@@ -108,24 +98,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script>
-    // Escuchar clicks en las categorías
-    document.querySelectorAll('.category-option').forEach(option => {
-        option.addEventListener('click', function (e) {
-        e.preventDefault();
-
-        const selectedText = this.textContent.trim();
-        
-        // Cambia el texto del botón
-        document.getElementById('selected-category').textContent = selectedText;
-
-        // Cambia el valor del input hidden
-        document.getElementById('category-input').value = selectedText;
-
-        // Oculta el dropdown (si Flowbite no lo hace automáticamente)
-        document.getElementById('dropdown').classList.add('hidden');
-        });
-    });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script src="../static/javascript/show_view.js"></script>
+    <script src="../static/javascript/endpoint.js"></script>
 </body>
 </html>

@@ -4,3 +4,4 @@ python-dotenv
 spacy
 daisyui
 flowbite
+tailwind-animate
