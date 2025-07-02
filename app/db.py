@@ -1,48 +1,39 @@
-from dotenv import load_dotenv, find_dotenv
 import os
 from pymongo import MongoClient
-load_dotenv(find_dotenv())
+import os
+from urllib.parse import quote_plus
 
-password = os.environ.get("MONGODB_PWD")
-print(f"Password cargada: {password}")
+# RECOMENDADO: usa variable de entorno
+MONGO_URI = os.getenv("MONGO_URI")
 
-connection_string = f"mongodb+srv://edjoel05:{password}@server1.jns05ba.mongodb.net/?retryWrites=true&w=majority&appName=SERVER1"
-client = MongoClient(connection_string)
-dbs = client.list_database_names()
-chatbot_db = client.chatbot
-collection = chatbot_db.list_collection_names()
+# OPCIONAL: fallback si no hay variable de entorno
+if not MONGO_URI:
+    USERNAME = "edjoel05"
+    PASSWORD = "1234"  # O usa os.getenv("MONGO_PASSWORD")
+    escaped_password = quote_plus(PASSWORD)
+    CLUSTER_HOST = "server1.jns05ba.mongodb.net"
 
-#How to insert data into one of the collections in the chatbot database
+    MONGO_URI = f"mongodb+srv://{USERNAME}:{escaped_password}@{CLUSTER_HOST}/chatbot?retryWrites=true&w=majority"
 
-"""
-def insterts_chatbot_doc():
-    collection = chatbot_db.mate
-    test_instert = {
-        "name": "Mate",
-        "description": "A chatbot that helps you with your daily tasks.",
+DB_NAME = "chatbot"
+
+try:
+    client = MongoClient(
+        MONGO_URI,
+        serverSelectionTimeoutMS=5000,  # Timeout de 5 segundos
+        connectTimeoutMS=10000,         # Timeout de conexión
+        maxPoolSize=50,                 # Pool de conexiones
+        retryWrites=True               # Reintentar escrituras
+    )
+    
+    db = client[DB_NAME]
+    
+    # Obtener referencias a las colecciones
+    collections = {
+        'recomendaciones': db['recomendaciones'],
+        'metricas': db['metricas'],
+        'sobre': db['sobre']
     }
-    inserted_id = collection.insert_one(test_instert).inserted_id
-    print(inserted_id)
-insterts_chatbot_doc()
-"""
-
-#How to do an insertMany operation in a collection
-
-"""
-test = client.test
-test_collection = test.test_collection
-
-def insertMany_test():
-    test_names = ["Alice", "Bob", "Charlie"]
-    test_ages = [25, 30, 35]
-
-    docs = []
-
-    for name, age in zip(test_names, test_ages):
-        doc = {"fist_name": name, "age": age}
-        docs.append(doc)
-    test_collection.insert_many(docs)
-insertMany_test()
-"""
-
-# How to do a find operation in a collection
+    
+except Exception as e:
+    exit(1)

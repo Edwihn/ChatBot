@@ -10,14 +10,18 @@ const clearChatButton = document.getElementById('clearChat');
 const selectedCategorySpan = document.getElementById('selected-category');
 const categoryOptions = document.querySelectorAll('.category-option');
 
+
+
 // Inicialización cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     initializeChatbot();
 });
 
+
 // Función de inicialización
 function initializeChatbot() {
-    // Event listeners para categorías
+
+    // CATEGORY SELECTION
     categoryOptions.forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
@@ -25,24 +29,33 @@ function initializeChatbot() {
         });
     });
 
-    // Event listener para envío de mensaje
+    // SEND THE MESSAGE
     sendButton.addEventListener('click', function(e) {
         e.preventDefault();
         sendMessage();
     });
 
-    // Event listener para Enter en el input
-    messageInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // Event listener para limpiar chat
+    // CLEAR THE CHAT
     clearChatButton.addEventListener('click', function() {
         clearChat();
     });
+
+    messageInput.addEventListener('input', function (e) {
+    if (e.target !== messageInput) return; // ONLY VALID IF IS THE CORRECT INPUT
+
+    const texto = e.target.value;
+    const permitido = /[^\w\s¿?.,'"+áéíóúüÁÉÍÓÚÜñÑ]/g;
+    const limpio = texto.replace(permitido, '');
+    
+    // Evita sobrescribir si no hubo cambios
+    if (texto !== limpio) {
+        const cursorPos = messageInput.selectionStart;
+        e.target.value = limpio;
+
+        // Restaurar posición del cursor para no afectar la escritura
+        messageInput.setSelectionRange(cursorPos - 1, cursorPos - 1);
+    }
+});
 }
 
 // Función para seleccionar categoría
@@ -210,6 +223,7 @@ function clearChat() {
     // Resetear categoría
     selectedCategory = null;
     selectedCategorySpan.textContent = 'Categorias';
+    messageInput.value = null;
     messageInput.placeholder = 'Seleccione una categoria';
     setInputState(false);
 }
