@@ -8,10 +8,7 @@ from app.db import collections, client
 try:
     nlp = spacy.load("es_core_news_sm")
 except OSError:
-    print("⚠️  Modelo español no encontrado. Instalando...")
-    import subprocess
-    subprocess.run(["python", "-m", "spacy", "download", "es_core_news_sm"])
-    nlp = spacy.load("es_core_news_sm")
+    print("Modelo español no encontrado. Instalando...")
 
 def normalize_text(text):
     """Normaliza el texto removiendo acentos y caracteres especiales"""
@@ -30,7 +27,7 @@ def normalize_text(text):
     
     # Remover espacios extra
     text = re.sub(r'\s+', ' ', text).strip()
-    
+
     return text
 
 def extract_keywords(text):
@@ -68,7 +65,7 @@ def search_mongodb(user_keywords, category):
         
         results = []
         
-        # ESTRATEGIA 1 MEJORADA: Buscar por palabras clave con regex (más flexible)
+        # ESTRATEGIA 1: Buscar por palabras clave con regex
         for keyword in user_keywords:
             # Normalizar keyword para búsqueda
             normalized_keyword = normalize_text(keyword)
@@ -105,7 +102,7 @@ def search_mongodb(user_keywords, category):
             
             print(f"   Keyword '{keyword}' - Resultados en palabras_clave: {len(docs)}")
         
-        # ESTRATEGIA 2 MEJORADA: Buscar en el texto de la pregunta
+        # ESTRATEGIA 2: Buscar en el texto de la pregunta
         for keyword in user_keywords:
             normalized_keyword = normalize_text(keyword)
             
@@ -118,13 +115,14 @@ def search_mongodb(user_keywords, category):
             }
             docs = list(collection.find(query))
             for doc in docs:
+                #check if the doc is new to add at the results
                 if not any(str(existing.get('_id')) == str(doc.get('_id')) for existing in results):
                     doc['score'] = 2  # Puntuación media
                     doc['match_type'] = f'question_match_{keyword}'
                     results.append(doc)
             print(f"   Keyword '{keyword}' - En preguntas: {len(docs)}")
         
-        # ESTRATEGIA 3 MEJORADA: Buscar en el texto de la respuesta
+        # ESTRATEGIA 3: Buscar en el texto de la respuesta
         for keyword in user_keywords:
             normalized_keyword = normalize_text(keyword)
             
@@ -142,7 +140,7 @@ def search_mongodb(user_keywords, category):
                     results.append(doc)
             print(f"   Keyword '{keyword}' - En respuestas: {len(docs)}")
         
-        # ESTRATEGIA 4 NUEVA: Búsqueda por fragmentos de palabras
+        # ESTRATEGIA 4: Búsqueda por fragmentos de palabras
         if not results:
             print("🔍 Intentando búsqueda por fragmentos...")
             for keyword in user_keywords:
@@ -199,7 +197,7 @@ def search_mongodb(user_keywords, category):
         match_types = {}
         for result in results:
             match_type = result.get('match_type', 'unknown')
-            match_types[match_type] = match_types.get(match_type, 0) + 1
+            match_types[match_type] = match_types.get(match_type, 0) + 1 #Sum all the coincidences in match_types
         
         for match_type, count in match_types.items():
             print(f"   {match_type}: {count} resultados")
@@ -283,12 +281,6 @@ def calculate_similarity_score(user_message, db_entry):
 def process_user_input(user_message, category):
     """Función principal para procesar input del usuario con MongoDB"""
     
-    if not user_message or not user_message.strip():
-        return "Por favor, escribe un mensaje válido."
-    
-    if not category:
-        return "Por favor, selecciona una categoría válida."
-    
     print(f"\n🔍 PROCESANDO CONSULTA")
     print(f"📝 Mensaje: '{user_message}'")
     print(f"📂 Categoría: '{category}'")
@@ -304,9 +296,6 @@ def process_user_input(user_message, category):
         # Si no hay keywords, usar palabras del mensaje normalizado
         user_keywords = [word for word in normalized_message.split() if len(word) > 2]
         print(f"🔄 Keywords de respaldo: {user_keywords}")
-    
-    if not user_keywords:
-        return "No pude entender tu mensaje. ¿Podrías reformularlo de otra manera?"
     
     # 2. Buscar en MongoDB
     search_results = search_mongodb(user_keywords, category)
@@ -352,56 +341,6 @@ def get_default_response(category):
     
     return default_responses.get(category.lower(), 
                                "Lo siento, no encontré información sobre tu consulta. ¿Podrías reformular tu pregunta?")
-
-def test_mongodb_connection():
-    """Prueba la conexión a MongoDB y muestra estadísticas MEJORADA"""
-    try:
-        print("🔍 PROBANDO CONEXIÓN A MONGODB ATLAS")
-        
-        # Probar conexión
-        client.admin.command('ping')
-        print("✅ Ping exitoso a MongoDB Atlas")
-        
-        collection_names = ['recomendaciones', 'metricas', 'sobre']
-        
-        for col_name in collection_names:
-            try:
-                collection = collections[col_name]
-                count = collection.count_documents({})
-                print(f"\n📊 Colección '{col_name}': {count} documentos")
-                
-                # Mostrar ejemplos y estructura
-                if count > 0:
-                    samples = list(collection.find({}).limit(3))
-                    for i, sample in enumerate(samples, 1):
-                        print(f"\n   📝 Ejemplo {i}:")
-                        print(f"   ID: {sample.get('_id')}")
-                        print(f"   Pregunta: {sample.get('pregunta', 'N/A')[:60]}...")
-                        
-                        keywords = sample.get('palabras_clave', [])
-                        if isinstance(keywords, list):
-                            print(f"   Keywords (array): {keywords[:5]}{'...' if len(keywords) > 5 else ''}")
-                        else:
-                            print(f"   Keywords (string): {str(keywords)[:60]}...")
-                        
-                        # Verificar estructura
-                        print(f"   Tipo palabras_clave: {type(keywords)}")
-                        print(f"   Campos disponibles: {list(sample.keys())}")
-                        
-            except Exception as e:
-                print(f"❌ Error accediendo a colección '{col_name}': {e}")
-        
-        print("\n✅ Test de conexión completado")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error de conexión a MongoDB Atlas: {e}")
-        print("Verifica:")
-        print("1. String de conexión correcto")
-        print("2. Usuario y contraseña correctos") 
-        print("3. Tu IP está en el whitelist de Atlas")
-        print("4. El cluster está activo y disponible")
-        return False
 
 def debug_search(user_message, category):
     """Función de debugging para entender por qué no encuentra resultados"""
